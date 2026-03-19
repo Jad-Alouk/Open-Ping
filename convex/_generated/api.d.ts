@@ -8,13 +8,31 @@
  * @module
  */
 
+import type * as chats from "../chats.js";
+import type * as clerk from "../clerk.js";
+import type * as helpers_auth from "../helpers/auth.js";
+import type * as helpers_utils from "../helpers/utils.js";
+import type * as http from "../http.js";
+import type * as media from "../media.js";
+import type * as threads from "../threads.js";
+import type * as users from "../users.js";
+
 import type {
   ApiFromModules,
   FilterApi,
   FunctionReference,
 } from "convex/server";
 
-declare const fullApi: ApiFromModules<{}>;
+declare const fullApi: ApiFromModules<{
+  chats: typeof chats;
+  clerk: typeof clerk;
+  "helpers/auth": typeof helpers_auth;
+  "helpers/utils": typeof helpers_utils;
+  http: typeof http;
+  media: typeof media;
+  threads: typeof threads;
+  users: typeof users;
+}>;
 
 /**
  * A utility for referencing Convex functions in your app's public API.

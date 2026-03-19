@@ -1,10 +1,9 @@
 import type { Metadata } from "next"
 import { ClerkProvider } from "@clerk/nextjs"
+import ConvexClientProvider from "@/providers/ConvexClientProvider"
+import { ThemeProvider } from "@/providers/theme-provider"
 import "./globals.css"
-import { Geist } from "next/font/google";
-import { cn } from "@/lib/utils";
 
-const geist = Geist({subsets:['latin'],variable:'--font-sans'});
 
 export const metadata: Metadata = {
 	title: "Open-Ping",
@@ -15,12 +14,21 @@ export default function RootLayout(
 	{ children }: Readonly<{ children: React.ReactNode }>
 ) {
 	return (
-		<html lang="en" className={cn("font-sans", geist.variable)}>
+		<html lang="en" suppressHydrationWarning>
 			<body
 				className={`antialiased`}
 			>
 				<ClerkProvider>
-					{children}
+					<ConvexClientProvider>
+						<ThemeProvider
+							attribute="class"
+							defaultTheme="system"
+							enableSystem
+							disableTransitionOnChange
+						>
+							{children}
+						</ThemeProvider>
+					</ConvexClientProvider>
 				</ClerkProvider>
 			</body>
 		</html>
