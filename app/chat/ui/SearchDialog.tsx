@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
@@ -11,10 +11,34 @@ import {
     DialogTrigger,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
+import { Preloaded, usePreloadedQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { useDebounce } from "@/hooks/useDebounce"
+import Link from "next/link"
 
-export function SearchDialog() {
+
+export function SearchDialog(
+    { preThreads }: { preThreads: Preloaded<typeof api.threads.getThreads> }
+) {
+    const threads = usePreloadedQuery(preThreads)
     const [open, setOpen] = useState(false)
+
     const [query, setQuery] = useState("")
+    const [seacrh, setSearch] = useState<typeof threads>()
+    const debouncedQuery = useDebounce(query, 100)
+
+    useEffect(() => {
+        const f = debouncedQuery.toLowerCase().trim()
+        if (f) {
+            setSearch(threads?.filter(t => {
+                const nameMatch = t.name.toLowerCase().includes(f)
+                const lastMessageMatch = t.lastMessage.toLowerCase().includes(f)
+                return nameMatch || lastMessageMatch
+            }).slice(0, 5))
+        } else {
+            setSearch(null)
+        }
+    }, [debouncedQuery])
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -30,21 +54,34 @@ export function SearchDialog() {
                 </DialogHeader>
                 <div className="flex flex-col gap-4">
                     <Input
-                        placeholder="Search conversations..."
+                        placeholder="Search by name or last message..."
                         value={query}
                         onChange={(e) => setQuery(e.target.value)}
                         autoFocus
                     />
                     <div className="min-h-50 rounded-md border border-border p-4">
-                        {query ? (
-                            <p className="text-sm text-muted-foreground">
-                                No results found for &quot;{query}&quot;
-                            </p>
-                        ) : (
-                            <p className="text-sm text-muted-foreground">
-                                Start typing to search through your conversations...
-                            </p>
-                        )}
+                        {
+                            seacrh ?
+                                seacrh.length === 0 ?
+                                    (
+                                        <p className="text-sm text-muted-foreground">
+                                            {`No results found for "${query}"`}
+                                        </p>
+                                    ) :
+                                    seacrh.map(t =>
+                                        <Link
+                                            key={t.id}
+                                            href={`/chat/${t.id}`}
+                                            onClick={() => setOpen(false)}
+                                            className="text-sm text-muted-foreground block"
+                                        >
+                                            {t.name}
+                                        </Link>
+                                    ) :
+                                (<p className="text-sm text-muted-foreground">
+                                    Start typing to search through your conversations...
+                                </p>)
+                        }
                     </div>
                 </div>
             </DialogContent>

@@ -9,23 +9,30 @@ import {
     DialogHeader,
     DialogTitle,
     DialogTrigger,
-    DialogFooter,
 } from "@/components/ui/dialog"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
-import { Textarea } from "@/components/ui/textarea"
+import { useDebounce } from "@/hooks/useDebounce"
+import { useMutation, useQuery } from "convex/react"
+import { api } from "@/convex/_generated/api"
+import { useRouter } from "next/navigation"
+
 
 export function NewChatDialog() {
     const [open, setOpen] = useState(false)
-    const [title, setTitle] = useState("")
-    const [message, setMessage] = useState("")
+    const [query, setQuery] = useState("")
+    const debouncedQuery = useDebounce(query)
 
-    const handleCreate = () => {
-        // Handle new chat creation
-        console.log("Creating chat:", { title, message })
-        setTitle("")
-        setMessage("")
-        setOpen(false)
+    const router = useRouter()
+    const suggestions = useQuery(api.users.searchUsers, { searchTerm: debouncedQuery })
+    const createThread = useMutation(api.threads.upsertThread)
+
+    const handleThread = async (yapperID: string) => {
+        const newThread = await createThread({ yapperID })
+        if (newThread) {
+            setOpen(false)
+            setQuery("")
+            router.push(`/chat/${newThread}`)
+        }
     }
 
     return (
@@ -38,37 +45,43 @@ export function NewChatDialog() {
             </DialogTrigger>
             <DialogContent className="sm:max-w-md">
                 <DialogHeader>
-                    <DialogTitle>New Conversation</DialogTitle>
+                    <DialogTitle>New Chat</DialogTitle>
                 </DialogHeader>
                 <div className="flex flex-col gap-4">
                     <div className="flex flex-col gap-2">
-                        <Label htmlFor="title">Title</Label>
                         <Input
-                            id="title"
-                            placeholder="Conversation title..."
-                            value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            id="seacrh"
+                            placeholder="Search by email or name..."
+                            value={query}
+                            onChange={(e) => setQuery(e.target.value)}
                         />
                     </div>
-                    <div className="flex flex-col gap-2">
-                        <Label htmlFor="message">First Message</Label>
-                        <Textarea
-                            id="message"
-                            placeholder="Start your conversation..."
-                            value={message}
-                            onChange={(e) => setMessage(e.target.value)}
-                            rows={4}
-                        />
+                    <div
+                        className="flex flex-col gap-2 min-h-50 rounded-md border border-border p-4"
+                    >
+                        {
+                            suggestions ?
+                                suggestions.length === 0 ?
+                                    (
+                                        <p className="text-sm text-muted-foreground">
+                                            {`No results found for "${query}"`}
+                                        </p>
+                                    ) :
+                                    suggestions.map(s =>
+                                        <p
+                                            key={s.externalID}
+                                            onClick={() => handleThread(s.externalID)}
+                                            className="text-sm text-muted-foreground block cursor-pointer"
+                                        >
+                                            {s.email}
+                                        </p>
+                                    ) :
+                                (<p className="text-sm text-muted-foreground">
+                                    Start typing to search for a user...
+                                </p>)
+                        }
                     </div>
                 </div>
-                <DialogFooter>
-                    <Button variant="outline" onClick={() => setOpen(false)}>
-                        Cancel
-                    </Button>
-                    <Button onClick={handleCreate} disabled={!title.trim()}>
-                        Create
-                    </Button>
-                </DialogFooter>
             </DialogContent>
         </Dialog>
     )

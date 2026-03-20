@@ -1,9 +1,6 @@
 import { preloadQuery } from "convex/nextjs"
 import { api } from "@/convex/_generated/api"
 import { ChatSidebar } from "./ui/ChatSidebar"
-import Link from "next/link"
-import { Button } from "@/components/ui/button"
-import { ArrowLeft } from "lucide-react"
 import { MobileSidebar } from "./ui/MobileSidebar"
 
 
@@ -14,29 +11,21 @@ export default async function ChatLayout(
     const preThreads = await preloadQuery(api.threads.getThreads)
 
     return (
-        <div className="flex h-dvh w-full">
+        <div className="relative flex h-dvh w-full overflow-hidden">
             {/* Desktop Sidebar */}
-            <div className="hidden w-72 shrink-0 md:block">
+            <div className="hidden h-full w-72 shrink-0 md:block">
                 <ChatSidebar preThreads={preThreads} />
             </div>
 
             {/* Mobile Sidebar */}
             <header
-                className="flex items-start absolute gap-3 border-b border-border px-4 py-3 md:hidden"
+                className="absolute left-0 right-0 top-0 z-10 flex items-start gap-3 border-b border-border bg-background px-4 py-3 md:hidden"
             >
                 <MobileSidebar preThreads={preThreads} />
-
-                <Link href="/chat" className="hidden md:block">
-                    <Button variant="ghost" size="icon" className="h-8 w-8">
-                        <ArrowLeft className="h-4 w-4" />
-                        <span className="sr-only">Back to chats</span>
-                    </Button>
-                </Link>
-                {/* <h1 className="truncate font-semibold">{title}</h1> */}
             </header>
 
             {/* Main Content */}
-            <main className="flex flex-1 flex-col overflow-hidden">
+            <main className="flex min-h-0 flex-1 flex-col overflow-hidden pt-14 md:pt-0">
                 {children}
             </main>
         </div>

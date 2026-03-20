@@ -62,11 +62,7 @@ export const searchUsers = query({
     handler: async (ctx, { searchTerm }) => {
 
         const currentUser = await getCurrentUser(ctx)
-        if (currentUser === null) throw new ConvexError({
-            code: 403,
-            message: "User is not authorized.",
-            fix: "Make sure you have a valid account by signing up."
-        })
+        if (currentUser === null) return null
 
         if (!searchTerm) return []
 

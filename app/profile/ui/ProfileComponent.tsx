@@ -3,7 +3,7 @@
 import { Preloaded, useMutation, usePreloadedQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
 import { fetchMutation } from "convex/nextjs"
-import { useState, useRef } from "react"
+import { useRef } from "react"
 import { useProcess } from "@/hooks/useProcess"
 import { formatError } from "@/lib/utils"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
@@ -13,6 +13,7 @@ import { Label } from "@/components/ui/label"
 import { Button } from "@/components/ui/button"
 import { Spinner } from "@/components/ui/spinner"
 import { CircleCheckIcon, OctagonXIcon, CameraIcon } from "lucide-react"
+import { UserButton } from "@clerk/nextjs"
 
 
 export default function ProfileComponent(
@@ -25,18 +26,18 @@ export default function ProfileComponent(
     const [state, dispatch, clear] = useProcess()
     const fileInputRef = useRef<HTMLInputElement>(null)
 
-    const [username, setUsername] = useState("")
-    const [bio, setBio] = useState("")
-
-    const submitter = async (e: React.FormEvent<HTMLFormElement>) => {
+    const submitter = async (e: React.SubmitEvent<HTMLFormElement>) => {
         e.preventDefault()
+        const { username, bio } = Object.fromEntries(
+            new FormData(e.target).entries()
+        ) as { username: string, bio: string }
 
         if (!userData) {
             dispatch({ type: "fail", message: "User is not authenticated" })
             return
         }
 
-        // // No changes but submits anyway
+        // No changes but submits anyway
         if (!username && !bio) {
             clear()
             return
@@ -52,16 +53,13 @@ export default function ProfileComponent(
                 type: "fail",
                 message: "Username must be between 2 and 20 characters long."
             })
-            setBio(userData?.bio ?? bio)
             return
         }
-
         if (bio.length < 1 || bio.length > 40) {
             dispatch({
                 type: "fail",
                 message: "Bio must be between 1 and 40 characters long."
             })
-            setUsername(userData.username)
             return
         }
 
@@ -160,8 +158,8 @@ export default function ProfileComponent(
                             <div className="flex flex-col items-center gap-3">
                                 <div className="relative">
                                     <Avatar className="size-20 md:size-24 border-4 border-border">
-                                        <AvatarImage src={userData?.avatar} alt={username} />
-                                        <AvatarFallback className="text-lg">{username?.[0]?.toUpperCase()}</AvatarFallback>
+                                        <AvatarImage src={userData?.avatar} alt="Avatar" />
+                                        <AvatarFallback className="text-lg">{userData?.username?.[0]?.toUpperCase()}</AvatarFallback>
                                     </Avatar>
                                     <button
                                         type="button"
@@ -191,10 +189,11 @@ export default function ProfileComponent(
                                     <Label htmlFor="username">Username</Label>
                                     <Input
                                         id="username"
+                                        name="username"
                                         type="text"
                                         placeholder="Enter your username"
                                         defaultValue={userData?.username}
-                                        onChange={(e) => setUsername(e.target.value)}
+                                        // onChange={(e) => setUsername(e.target.value)}
                                         disabled={state.loading}
                                     />
                                     <p className="text-xs text-muted-foreground">
@@ -206,10 +205,11 @@ export default function ProfileComponent(
                                     <Label htmlFor="bio">Bio</Label>
                                     <Input
                                         id="bio"
+                                        name="bio"
                                         type="text"
                                         placeholder="Tell us about yourself"
                                         defaultValue={userData?.bio}
-                                        onChange={(e) => setBio(e.target.value)}
+                                        // onChange={(e) => setBio(e.target.value)}
                                         disabled={state.loading}
                                     />
                                     <p className="text-xs text-muted-foreground">
@@ -231,7 +231,7 @@ export default function ProfileComponent(
                                 </div>
                             </div>
 
-                            {/* Submit Button */}
+                            {/* Submit Button + Account Settings */}
                             <div className="flex gap-3 pt-3">
                                 <Button
                                     type="submit"
@@ -247,6 +247,8 @@ export default function ProfileComponent(
                                         "Update Profile"
                                     )}
                                 </Button>
+
+                                <UserButton />
                             </div>
                         </form>
                     </CardContent>

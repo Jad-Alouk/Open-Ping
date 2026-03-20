@@ -1,18 +1,19 @@
 "use client"
 
-import { MessageSquare } from "lucide-react"
+import { MessageSquare, Settings2 } from "lucide-react"
 import { SearchDialog } from "./SearchDialog"
 import { NewChatDialog } from "./NewChatDialog"
 import { ThreadsList } from "./ThreadsList"
 import { Preloaded } from "convex/react"
 import { api } from "@/convex/_generated/api"
+import Link from "next/link"
 
 
 export function ChatSidebar(
     { preThreads }: { preThreads: Preloaded<typeof api.threads.getThreads> }
 ) {
     return (
-        <aside className="flex h-full w-full flex-col border-r border-border bg-sidebar">
+        <aside className="flex h-full min-h-0 w-full flex-col overflow-hidden border-r border-border bg-sidebar">
             {/* Header */}
             <div className="flex items-center justify-between border-b border-border px-4 py-3">
                 <div className="flex items-center gap-2">
@@ -20,7 +21,10 @@ export function ChatSidebar(
                     <span className="font-semibold text-sidebar-foreground">Chats</span>
                 </div>
                 <div className="flex items-center gap-1">
-                    <SearchDialog />
+                    <Link href={"/profile"}>
+                        <Settings2 size={17} />
+                    </Link>
+                    <SearchDialog preThreads={preThreads} />
                     <NewChatDialog />
                 </div>
             </div>

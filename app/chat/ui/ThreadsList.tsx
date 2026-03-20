@@ -6,16 +6,21 @@ import { cn } from "@/lib/utils"
 import { ScrollArea } from "@/components/ui/scroll-area"
 import { Preloaded, usePreloadedQuery } from "convex/react"
 import { api } from "@/convex/_generated/api"
+import { Dispatch, SetStateAction } from "react"
 
 
 export function ThreadsList(
-    { preThreads }: { preThreads: Preloaded<typeof api.threads.getThreads> }
+    { preThreads, mobile }: {
+        preThreads: Preloaded<typeof api.threads.getThreads>
+        mobile?: Dispatch<SetStateAction<boolean>>
+    }
+
 ) {
     const pathname = usePathname()
     const threads = usePreloadedQuery(preThreads)
 
     return (
-        <ScrollArea className="flex-1">
+        <ScrollArea className="flex-1 min-h-0">
             <div className="flex flex-col gap-1 p-2">
                 {threads?.map((thread) => {
                     const isActive = pathname === `/chat/${thread.id}`
@@ -23,6 +28,7 @@ export function ThreadsList(
                         <Link
                             key={thread.id}
                             href={`/chat/${thread.id}`}
+                            onClick={mobile ? () => mobile(p => !p) : () => { }}
                             className={cn(
                                 "flex flex-col gap-1 rounded-lg px-3 py-2 text-sm transition-colors",
                                 "hover:bg-accent hover:text-accent-foreground",
