@@ -43,7 +43,7 @@ export function MobileSidebar(
                     <div className="flex items-center justify-between pr-8">
                         <SheetTitle className="text-base">Chats</SheetTitle>
                         <div className="flex items-center gap-1">
-                            <SearchDialog />
+                            <SearchDialog preThreads={preThreads} />
                             <NewChatDialog />
                         </div>
                     </div>
